@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Construtor de Página de Alto Impacto — Mapa do Sistema</title>
+<style>
+  :root {
+    --gold: #D4AF37;
+    --gold-light: #F0D060;
+    --gold-dark: #A08020;
+    --bg: #0A0A0F;
+    --bg2: #12121A;
+    --bg3: #1A1A26;
+    --text: #E8E8F0;
+    --text-dim: #888899;
+    --border: #2A2A3A;
+    --phase0: #4A90D9;
+    --phase1: #9B59B6;
+    --phase2: #E67E22;
+    --phase3: #27AE60;
+    --phase4: #E74C3C;
+    --phase5: #1ABC9C;
+    --orchestrator: #D4AF37;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #0A0A0F 0%, #1A1520 50%, #0A0A0F 100%);
+    border-bottom: 1px solid var(--gold-dark);
+    padding: 32px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 300px;
+    background: radial-gradient(ellipse, rgba(212,175,55,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(212,175,55,0.1);
+    border: 1px solid var(--gold-dark);
+    border-radius: 4px;
+    padding: 4px 12px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+  .header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .header p {
+    color: var(--text-dim);
+    font-size: 15px;
+  }
+
+  /* Nav Tabs */
+  .nav {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    padding: 20px 48px 0;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-tab {
+    padding: 10px 24px;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+  }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+
+  /* Content */
+  .content { padding: 40px 48px; max-width: 1400px; margin: 0 auto; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ====== TIMELINE VIEW ====== */
+  .timeline-container { position: relative; }
+
+  .timeline-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .timeline-header h2 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .timeline-header p { color: var(--text-dim); font-size: 14px; }
+
+  /* Orchestrator bar */
+  .orchestrator-bar {
+    background: linear-gradient(135deg, rgba(212,175,55,0.05), rgba(212,175,55,0.12), rgba(212,175,55,0.05));
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 12px;
+    padding: 16px 24px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .orchestrator-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(212,175,55,0.15);
+    border: 1px solid rgba(212,175,55,0.4);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .orchestrator-info h3 {
+    color: var(--gold);
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .orchestrator-info p { color: var(--text-dim); font-size: 13px; line-height: 1.5; }
+  .orchestrator-badge {
+    margin-left: auto;
+    background: rgba(212,175,55,0.1);
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 11px;
+    color: var(--gold);
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .orchestrator-badge strong { display: block; font-size: 20px; font-weight: 700; }
+
+  /* Phase */
+  .phase-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: stretch;
+  }
+  .phase-label {
+    width: 140px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    padding-right: 16px;
+    position: relative;
+  }
+  .phase-label::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--phase-color, var(--border));
+    border-radius: 2px;
+  }
+  .phase-name {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--phase-color, var(--text-dim));
+    margin-bottom: 4px;
+  }
+  .phase-num {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--phase-color, var(--text-dim));
+    opacity: 0.3;
+    line-height: 1;
+  }
+  .phase-mode {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 3px;
+    padding: 2px 6px;
+  }
+
+  .phase-skills {
+    flex: 1;
+    display: flex;
+    gap: 12px;
+    padding: 16px 0;
+    flex-wrap: wrap;
+  }
+
+  .skill-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    flex: 1;
+    min-width: 160px;
+    max-width: 240px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .skill-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--phase-color, var(--border));
+  }
+  .skill-card:hover {
+    border-color: var(--phase-color, var(--border));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .skill-card.selected {
+    border-color: var(--phase-color, var(--gold));
+    box-shadow: 0 0 0 1px var(--phase-color, var(--gold));
+  }
+  .skill-icon { font-size: 22px; margin-bottom: 8px; }
+  .skill-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .skill-tagline {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+
+  /* Arrow between phases */
+  .phase-arrow {
+    display: flex;
+    align-items: center;
+    padding-left: 140px;
+    margin-bottom: 8px;
+    color: var(--text-dim);
+    font-size: 13px;
+    gap: 8px;
+  }
+  .phase-arrow::before {
+    content: '▼';
+    font-size: 10px;
+  }
+
+  /* Gate special */
+  .gate-row {
+    margin: 8px 0;
+    padding-left: 156px;
+  }
+  .gate-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(39,174,96,0.06);
+    border: 1px dashed rgba(39,174,96,0.4);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: #2ecc71;
+  }
+
+  /* Detail Panel */
+  .detail-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 24px;
+    display: none;
+  }
+  .detail-panel.visible { display: block; }
+  .detail-panel h3 {
+    color: var(--gold);
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+  .detail-panel p { color: var(--text-dim); font-size: 14px; line-height: 1.6; }
+
+  /* ====== PIPELINE VIEW (horizontal flow) ====== */
+  .pipeline-scroll {
+    overflow-x: auto;
+    padding-bottom: 16px;
+  }
+  .pipeline-flow {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    min-width: max-content;
+    padding: 20px 0;
+  }
+  .pipeline-phase {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .pipeline-phase-header {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    border: 1px solid;
+  }
+  .pipeline-skills-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+  .pipeline-skill {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    width: 160px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .pipeline-skill::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--phase-color);
+  }
+  .pipeline-skill-icon { font-size: 18px; margin-bottom: 4px; }
+  .pipeline-skill-name { font-size: 12px; font-weight: 600; color: var(--text); }
+  .pipeline-skill-tag { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+
+  .pipeline-connector {
+    display: flex;
+    align-items: center;
+    padding-top: 60px;
+  }
+  .conn-line {
+    width: 32px;
+    height: 2px;
+    position: relative;
+  }
+  .conn-arrow {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin: 0 4px;
+  }
+
+  /* Output badges */
+  .phase-output {
+    margin-top: 8px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    max-width: 180px;
+  }
+  .phase-output strong { color: var(--text); }
+
+  /* ====== PLANS VIEW ====== */
+  .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  .plan-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .plan-card:hover {
+    border-color: var(--plan-color, var(--gold));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .plan-card.selected {
+    border-color: var(--plan-color, var(--gold));
+    background: rgba(212,175,55,0.03);
+  }
+  .plan-number {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--plan-color, var(--text-dim));
+    margin-bottom: 8px;
+  }
+  .plan-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .plan-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  .plan-skills-count {
+    font-size: 12px;
+    color: var(--plan-color, var(--text-dim));
+    font-weight: 600;
+  }
+
+  .plans-comparison {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .plans-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .plans-table th {
+    padding: 14px 16px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+  }
+  .plans-table th:first-child { text-align: left; color: var(--text-dim); }
+  .plans-table td {
+    padding: 12px 16px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .plans-table td:first-child {
+    text-align: left;
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+  .plans-table tr:last-child td { border-bottom: none; }
+  .plans-table .phase-row-label {
+    color: var(--text);
+    font-weight: 600;
+    font-size: 12px;
+    padding-top: 16px;
+    background: var(--bg3);
+    letter-spacing: 0.5px;
+  }
+  .check { color: #2ecc71; font-size: 16px; }
+  .dash { color: var(--border); }
+  .partial { color: var(--gold); font-size: 12px; }
+
+  /* ====== OVERVIEW / ARCHITECTURE ====== */
+  .arch-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .arch-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .arch-card h3 {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+  .arch-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .arch-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--dot-color, var(--gold));
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .arch-item-content { flex: 1; }
+  .arch-item-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .arch-item-desc { font-size: 12px; color: var(--text-dim); line-height: 1.4; }
+
+  .validation-steps {
+    counter-reset: step;
+  }
+  .validation-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .step-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(212,175,55,0.1);
+    border: 1px solid rgba(212,175,55,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+  .step-content { flex: 1; }
+  .step-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .step-desc { font-size: 12px; color: var(--text-dim); }
+
+  /* Tag chips */
+  .chip {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin: 2px;
+  }
+  .chip-parallel { background: rgba(74,144,217,0.1); color: #4A90D9; border: 1px solid rgba(74,144,217,0.3); }
+  .chip-sequential { background: rgba(231,76,60,0.1); color: #E74C3C; border: 1px solid rgba(231,76,60,0.3); }
+  .chip-gate { background: rgba(39,174,96,0.1); color: #27AE60; border: 1px solid rgba(39,174,96,0.3); }
+  .chip-synthesis { background: rgba(155,89,182,0.1); color: #9B59B6; border: 1px solid rgba(155,89,182,0.3); }
+
+  /* Stats */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 36px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-label { font-size: 12px; color: var(--text-dim); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3A3A5A; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">Sistema Completo · 15 Skills</div>
+  <h1>Construtor de Página de Alto Impacto</h1>
+  <p>Pipeline orquestrado de construção de páginas de venda de alta conversão</p>
+</div>
+
+<div class="nav">
+  <button class="nav-tab active" onclick="showView('timeline')">Timeline do Pipeline</button>
+  <button class="nav-tab" onclick="showView('pipeline')">Fluxo Horizontal</button>
+  <button class="nav-tab" onclick="showView('plans')">Planos de Serviço</button>
+  <button class="nav-tab" onclick="showView('architecture')">Arquitetura</button>
+</div>
+
+<!-- ====== TIMELINE VIEW ====== -->
+<div id="view-timeline" class="view active">
+<div class="content">
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-num">15</div>
+      <div class="stat-label">Skills Construídas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">6</div>
+      <div class="stat-label">Fases no Pipeline</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">4</div>
+      <div class="stat-label">Planos de Serviço</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">4</div>
+      <div class="stat-label">Camadas de Validação</div>
+    </div>
+  </div>
+
+  <!-- Orchestrator -->
+  <div class="orchestrator-bar">
+    <div class="orchestrator-icon">🎯</div>
+    <div class="orchestrator-info">
+      <h3>Orquestradora</h3>
+      <p>Coordena todo o pipeline. Verifica sessões anteriores, define o plano, invoca as skills na ordem correta, valida em 4 camadas após cada etapa e gerencia gates humanos. Augusto só precisa dizer que há um novo lead.</p>
+    </div>
+    <div class="orchestrator-badge">
+      <strong>15</strong>
+      skills gerenciadas
+    </div>
+  </div>
+
+  <!-- FASE 0 -->
+  <div class="phase-row" style="--phase-color: var(--phase0)">
+    <div class="phase-label" style="--phase-color: var(--phase0)">
+      <div class="phase-name" style="color: var(--phase0)">Input</div>
+      <div class="phase-num" style="color: var(--phase0)">0</div>
+      <div class="phase-mode"><span class="chip chip-parallel">paralelo</span></div>
+    </div>
+    <div class="phase-skills">
+      <div class="skill-card" style="--phase-color: var(--phase0)" onclick="selectSkill(this, 'page-analyzer')">
+        <div class="skill-icon">🔍</div>
+        <div class="skill-name">Page Analyzer</div>
+        <div class="skill-tagline">Audita a página existente do cliente — copy, estrutura, CRO, técnico</div>
+      </div>
+      <div class="skill-card" style="--phase-color: var(--phase0)" onclick="selectSkill(this, 'instagram-analyzer')">
+        <div class="skill-icon">📱</div>
+        <div class="skill-name">Instagram Analyzer</div>
+        <div class="skill-tagline">Lê o perfil do Instagram para extrair tom de voz, visual e audiência</div>
+      </div>
+      <div class="skill-card" style="--phase-color: var(--phase0)" onclick="selectSkill(this, 'mini-briefing')">
+        <div class="skill-icon">📋</div>
+        <div class="skill-name">Mini Briefing</div>
+        <div class="skill-tagline">Entrevista estruturada com o cliente para coletar dados essenciais da oferta</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-arrow">Gera o <strong style="color:var(--text); margin: 0 4px">Campaign Brief</strong> — documento central que alimenta todas as próximas fases</div>
+
+  <!-- FASE 1 -->
+  <div class="phase-row" style="--phase-color: var(--phase1)">
+    <div class="phase-label" style="--phase-color: var(--phase1)">
+      <div class="phase-name" style="color: var(--phase1)">Estratégia</div>
+      <div class="phase-num" style="color: var(--phase1)">1</div>
+      <div class="phase-mode"><span class="chip chip-parallel">paralelo</span> + <span class="chip chip-synthesis">síntese</span></div>
+    </div>
+    <div class="phase-skills">
+      <div class="skill-card" style="--phase-color: var(--phase1)" onclick="selectSkill(this, 'psicologo')">
+        <div class="skill-icon">🧠</div>
+        <div class="skill-name">Psicólogo Comportamental</div>
+        <div class="skill-tagline">Mapeia dores, desejos, objeções e gatilhos do público-alvo</div>
+      </div>
+      <div class="skill-card" style="--phase-color: var(--phase1)" onclick="selectSkill(this, 'estrategista')">
+        <div class="skill-icon">💡</div>
+        <div class="skill-name">Estrategista de Oferta</div>
+        <div class="skill-tagline">Estrutura a oferta completa — produto, preço, bônus, garantia, posicionamento</div>
+      </div>
+      <div class="skill-card" style="--phase-color: var(--phase1)" onclick="selectSkill(this, 'cro')">
+        <div class="skill-icon">📈</div>
+        <div class="skill-name">CRO Strategy</div>
+        <div class="skill-tagline">Sintetiza os dois relatórios em estratégia de conversão para a página</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-arrow">Estratégia consolidada alimenta Copywriting, Design e Prova Social em paralelo</div>
+
+  <!-- FASE 2 -->
+  <div class="phase-row" style="--phase-color: var(--phase2)">
+    <div class="phase-label" style="--phase-color: var(--phase2)">
+      <div class="phase-name" style="color: var(--phase2)">Conteúdo</div>
+      <div class="phase-num" style="color: var(--phase2)">2</div>
+      <div class="phase-mode"><span class="chip chip-parallel">paralelo</span></div>
+    </div>
+    <div class="phase-skills">
+      <div class="skill-card" style="--phase-color: var(--phase2)" onclick="selectSkill(this, 'copywriting')">
+        <div class="skill-icon">✍️</div>
+        <div class="skill-name">Copywriting</div>
+        <div class="skill-tagline">Escreve toda a copy da página baseada na CRO Strategy</div>
+      </div>
+      <div class="skill-card" style="--phase-color: var(--phase2)" onclick="selectSkill(this, 'design-system')">
+        <div class="skill-icon">🎨</div>
+        <div class="skill-name">Design System</div>
+        <div class="skill-tagline">Define paleta, tipografia, componentes visuais e identidade da página</div>
+      </div>
+      <div class="skill-card" style="--phase-color: var(--phase2)" onclick="selectSkill(this, 'prova-social')">
+        <div class="skill-icon">⭐</div>
+        <div class="skill-name">Prova Social</div>
+        <div class="skill-tagline">Coleta, audita e posiciona depoimentos, resultados e casos de sucesso</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-arrow">Entradas prontas para o Desenvolvedor construir a página</div>
+
+  <!-- FASE 3 -->
+  <div class="phase-row" style="--phase-color: var(--phase3)">
+    <div class="phase-label" style="--phase-color: var(--phase3)">
+      <div class="phase-name" style="color: var(--phase3)">Build</div>
+      <div class="phase-num" style="color: var(--phase3)">3</div>
+      <div class="phase-mode"><span class="chip chip-sequential">sequencial</span></div>
+    </div>
+    <div class="phase-skills">
+      <div class="skill-card" style="--phase-color: var(--phase3)" onclick="selectSkill(this, 'desenvolvedor')">
+        <div class="skill-icon">💻</div>
+        <div class="skill-name">Desenvolvedor</div>
+        <div class="skill-tagline">Constrói a página em HTML/CSS/JS puro hospedada em Cloudflare Pages</div>
+      </div>
+      <div class="skill-card" style="--phase-color: var(--phase3)" onclick="selectSkill(this, 'performance')">
+        <div class="skill-icon">⚡</div>
+        <div class="skill-name">Performance</div>
+        <div class="skill-tagline">Audita e otimiza Core Web Vitals, compressão, lazy load e velocidade</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gate -->
+  <div class="gate-row">
+    <div class="gate-card" onclick="selectSkill(null, 'gate')">
+      <span>🚦</span>
+      <span><strong>Gate de Aprovação do Cliente</strong> — Augusto revisa e aprova antes de avançar para Fase 4. Opções: aprovar, pedir revisão ou ignorar gate.</span>
+    </div>
+  </div>
+
+  <div class="phase-arrow">Página aprovada segue para otimizações de visibilidade e conversão</div>
+
+  <!-- FASE 4 -->
+  <div class="phase-row" style="--phase-color: var(--phase4)">
+    <div class="phase-label" style="--phase-color: var(--phase4)">
+      <div class="phase-name" style="color: var(--phase4)">Visibilidade</div>
+      <div class="phase-num" style="color: var(--phase4)">4</div>
+      <div class="phase-mode"><span class="chip chip-parallel">paralelo</span></div>
+    </div>
+    <div class="phase-skills">
+      <div class="skill-card" style="--phase-color: var(--phase4)" onclick="selectSkill(this, 'seo')">
+        <div class="skill-icon">🔎</div>
+        <div class="skill-name">SEO</div>
+        <div class="skill-tagline">Otimiza meta tags, estrutura semântica, Schema.org e sitemap</div>
+      </div>
+      <div class="skill-card" style="--phase-color: var(--phase4)" onclick="selectSkill(this, 'pixels')">
+        <div class="skill-icon">🎯</div>
+        <div class="skill-name">Pixels & Remarketing</div>
+        <div class="skill-tagline">Implementa Meta CAPI + Google Ads Conversion API server-side via CF Workers</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-arrow">Página visível e rastreada — agora instrumentando analytics completo</div>
+
+  <!-- FASE 5 -->
+  <div class="phase-row" style="--phase-color: var(--phase5)">
+    <div class="phase-label" style="--phase-color: var(--phase5)">
+      <div class="phase-name" style="color: var(--phase5)">Analytics</div>
+      <div class="phase-num" style="color: var(--phase5)">5</div>
+      <div class="phase-mode"><span class="chip chip-sequential">sequencial</span></div>
+    </div>
+    <div class="phase-skills">
+      <div class="skill-card" style="--phase-color: var(--phase5)" onclick="selectSkill(this, 'tracking')">
+        <div class="skill-icon">📊</div>
+        <div class="skill-name">Tracking</div>
+        <div class="skill-tagline">GTM + GA4 + Consent Mode v2 + LGPD — tracking server-side completo</div>
+      </div>
+      <div class="skill-card" style="--phase-color: var(--phase5)" onclick="selectSkill(this, 'dashboard')">
+        <div class="skill-icon">🖥️</div>
+        <div class="skill-name">Dashboard</div>
+        <div class="skill-tagline">Dashboard Dark Gold em HTML/JS conectado à GA4 API via CF Worker</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-arrow" style="color: var(--gold)">✅ Pipeline completo — página no ar, dados fluindo, dashboard ativo</div>
+
+  <!-- Detail panel -->
+  <div id="detail-panel" class="detail-panel">
+    <h3 id="detail-title"></h3>
+    <p id="detail-body"></p>
+  </div>
+
+</div>
+</div>
+
+<!-- ====== PIPELINE VIEW ====== -->
+<div id="view-pipeline" class="view">
+<div class="content">
+  <h2 style="font-size: 20px; margin-bottom: 8px; color: var(--text)">Fluxo Horizontal do Pipeline</h2>
+  <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 24px">Visão esquerda→direita do fluxo de dados entre as skills. Role horizontalmente se necessário.</p>
+
+  <div class="pipeline-scroll">
+    <div class="pipeline-flow">
+
+      <!-- FASE 0 -->
+      <div class="pipeline-phase">
+        <div class="pipeline-phase-header" style="color: var(--phase0); border-color: rgba(74,144,217,0.3); background: rgba(74,144,217,0.06)">FASE 0 · INPUT</div>
+        <div class="pipeline-skills-col" style="--phase-color: var(--phase0)">
+          <div class="pipeline-skill">
+            <div class="pipeline-skill-icon">🔍</div>
+            <div class="pipeline-skill-name">Page Analyzer</div>
+            <div class="pipeline-skill-tag">auditoria da página</div>
+          </div>
+          <div class="pipeline-skill">
+            <div class="pipeline-skill-icon">📱</div>
+            <div class="pipeline-skill-name">Instagram Analyzer</div>
+            <div class="pipeline-skill-tag">dados de branding</div>
+          </div>
+          <div class="pipeline-skill">
+            <div class="pipeline-skill-icon">📋</div>
+            <div class="pipeline-skill-name">Mini Briefing</div>
+            <div class="pipeline-skill-tag">dados da oferta</div>
+          </div>
+        </div>
+        <div class="phase-output"><strong>Campaign Brief</strong></div>
+      </div>
+
+      <!-- Connector -->
+      <div class="pipeline-connector"><div class="conn-line" style="background: linear-gradient(90deg, var(--phase0), var(--phase1))"></div><span class="conn-arrow">→</span></div>
+
+      <!-- FASE 1 -->
+      <div class="pipeline-phase">
+        <div class="pipeline-phase-header" style="color: var(--phase1); border-color: rgba(155,89,182,0.3); background: rgba(155,89,182,0.06)">FASE 1 · ESTRATÉGIA</div>
+        <div class="pipeline-skills-col" style="--phase-color: var(--phase1)">
+          <div class="pipeline-skill">
+            <div class="pipeline-skill-icon">🧠</div>
+            <div class="pipeline-skill-name">Psicólogo Comportamental</div>
+            <div class="pipeline-skill-tag">mapa de dores</div>
+          </div>
+          <div class="pipeline-skill">
+            <div class="pipeline-skill-icon">💡</div>
+            <div class="pipeline-skill-name">Estrategista de Oferta</div>
+            <div class="pipeline-skill-tag">estrutura da oferta</div>
+          </div>
+          <div class="pipeline-skill" style="border-color: rgba(155,89,182,0.5); background: rgba(155,89,182,0.04)">
+            <div class="pipeline-skill-icon">📈</div>
+            <div class="pipeline-skill-name">CRO Strategy</div>
+            <div class="pipeline-skill-tag">✦ síntese</div>
+          </div>
+        </div>
+        <div class="phase-output"><strong>Estratégia de CRO</strong></div>
+      </div>
+
+      <!-- Connector -->
+      <div class="pipeline-connector"><div class="conn-line" style="background: linear-gradient(90deg, var(--phase1), var(--phase2))"></div><span class="conn-arrow">→</span></div>
+
+      <!-- FASE 2 -->
+      <div class="pipeline-phase">
+        <div class="pipeline-phase-header" style="color: var(--phase2); border-color: rgba(230,126,34,0.3); background: rgba(230,126,34,0.06)">FASE 2 · CONTEÚDO</div>
+        <div class="pipeline-skills-col" style="--phase-color: var(--phase2)">
+          <div class="pipeline-skill">
+            <div class="pipeline-skill-icon">✍️</div>
+            <div class="pipeline-skill-name">Copywriting</div>
+            <div class="pipeline-skill-tag">texto completo</div>
+          </div>
+          <div class="pipeline-skill">
+            <div class="pipeline-skill-icon">🎨</div>
+            <div class="pipeline-skill-name">Design System</div>
+            <div class="pipeline-skill-tag">visual e identidade</div>
+          </div>
+          <div class="pipeline-skill">
+            <div class="pipeline-skill-icon">⭐</div>
+            <div class="pipeline-skill-name">Prova Social</div>
+            <div class="pipeline-skill-tag">depoimentos e prova</div>
+          </div>
+        </div>
+        <div class="phase-output"><strong>Assets prontos</strong></div>
+      </div>
+
+      <!-- Connector -->
+      <div class="pipeline-connector"><div class="conn-line" style="background: linear-gradient(90deg, var(--phase2), var(--phase3))"></div><span class="conn-arrow">→</span></div>
+
+      <!-- FASE 3 -->
+      <div class="pipeline-phase">
+        <div class="pipeline-phase-header" style="color: var(--phase3); border-color: rgba(39,174,96,0.3); background: rgba(39,174,96,0.06)">FASE 3 · BUILD</div>
+        <div class="pipeline-skills-col" style="--phase-color: var(--phase3)">
+          <div class="pipeline-skill">
+            <div class="pipeline-skill-icon">💻</div>
+            <div class="pipeline-skill-name">Desenvolvedor</div>
+            <div class="pipeline-skill-tag">HTML/CSS/JS</div>
+          </div>
+          <div class="pipeline-skill">
+            <div class="pipeline-skill-icon">⚡</div>
+            <div class="pipeline-skill-name">Performance</div>
+            <div class="pipeline-skill-tag">Core Web Vitals</div>
+          </div>
+          <div class="pipeline-skill" style="border-color: rgba(39,174,96,0.5); background: rgba(39,174,96,0.04); border-style: dashed;">
+            <div class="pipeline-skill-icon">🚦</div>
+            <div class="pipeline-skill-name">Gate de Aprovação</div>
+            <div class="pipeline-skill-tag">✦ humano</div>
+          </div>
+        </div>
+        <div class="phase-output"><strong>Página aprovada</strong></div>
+      </div>
+
+      <!-- Connector -->
+      <div class="pipeline-connector"><div class="conn-line" style="background: linear-gradient(90deg, var(--phase3), var(--phase4))"></div><span class="conn-arrow">→</span></div>
+
+      <!-- FASE 4 -->
+      <div class="pipeline-phase">
+        <div class="pipeline-phase-header" style="color: var(--phase4); border-color: rgba(231,76,60,0.3); background: rgba(231,76,60,0.06)">FASE 4 · VISIBILIDADE</div>
+        <div class="pipeline-skills-col" style="--phase-color: var(--phase4)">
+          <div class="pipeline-skill">
+            <div class="pipeline-skill-icon">🔎</div>
+            <div class="pipeline-skill-name">SEO</div>
+            <div class="pipeline-skill-tag">meta + Schema.org</div>
+          </div>
+          <div class="pipeline-skill">
+            <div class="pipeline-skill-icon">🎯</div>
+            <div class="pipeline-skill-name">Pixels & Remarketing</div>
+            <div class="pipeline-skill-tag">CAPI server-side</div>
+          </div>
+        </div>
+        <div class="phase-output"><strong>Página visível</strong></div>
+      </div>
+
+      <!-- Connector -->
+      <div class="pipeline-connector"><div class="conn-line" style="background: linear-gradient(90deg, var(--phase4), var(--phase5))"></div><span class="conn-arrow">→</span></div>
+
+      <!-- FASE 5 -->
+      <div class="pipeline-phase">
+        <div class="pipeline-phase-header" style="color: var(--phase5); border-color: rgba(26,188,156,0.3); background: rgba(26,188,156,0.06)">FASE 5 · ANALYTICS</div>
+        <div class="pipeline-skills-col" style="--phase-color: var(--phase5)">
+          <div class="pipeline-skill">
+            <div class="pipeline-skill-icon">📊</div>
+            <div class="pipeline-skill-name">Tracking</div>
+            <div class="pipeline-skill-tag">GTM + GA4 + LGPD</div>
+          </div>
+          <div class="pipeline-skill">
+            <div class="pipeline-skill-icon">🖥️</div>
+            <div class="pipeline-skill-name">Dashboard</div>
+            <div class="pipeline-skill-tag">Dark Gold · CF Worker</div>
+          </div>
+        </div>
+        <div class="phase-output" style="color: var(--gold); border-color: rgba(212,175,55,0.3);"><strong style="color: var(--gold)">✅ Entregue</strong></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ====== PLANS VIEW ====== -->
+<div id="view-plans" class="view">
+<div class="content">
+
+  <h2 style="font-size: 20px; margin-bottom: 8px; color: var(--text)">Planos de Serviço</h2>
+  <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 24px">4 níveis de entrega para diferentes necessidades e orçamentos do cliente.</p>
+
+  <div class="plans-grid">
+    <div class="plan-card" style="--plan-color: #4A90D9">
+      <div class="plan-number" style="color: #4A90D9">Plano 1</div>
+      <div class="plan-name">Refresh Visual</div>
+      <div class="plan-desc">Página mais bonita e moderna. Sem estratégia, sem copy, sem analytics.</div>
+      <div class="plan-skills-count" style="color: #4A90D9">5 skills · Fases 0 parcial + 3</div>
+    </div>
+    <div class="plan-card" style="--plan-color: #9B59B6">
+      <div class="plan-number" style="color: #9B59B6">Plano 2</div>
+      <div class="plan-name">Refresh + Dados</div>
+      <div class="plan-desc">Visual atualizado + tracking básico + dashboard simples.</div>
+      <div class="plan-skills-count" style="color: #9B59B6">7 skills · Fases 0 parcial + 3 + 5 básico</div>
+    </div>
+    <div class="plan-card" style="--plan-color: #E67E22">
+      <div class="plan-number" style="color: #E67E22">Plano 3</div>
+      <div class="plan-name">Performance</div>
+      <div class="plan-desc">Reestruturação estratégica completa + dados robustos.</div>
+      <div class="plan-skills-count" style="color: #E67E22">12 skills · Fases 0–3 + 4–5</div>
+    </div>
+    <div class="plan-card" style="--plan-color: var(--gold)">
+      <div class="plan-number" style="color: var(--gold)">Plano 4</div>
+      <div class="plan-name">Transformação Total</div>
+      <div class="plan-desc">Pipeline completo — do zero com toda a metodologia.</div>
+      <div class="plan-skills-count" style="color: var(--gold)">15 skills · Todas as fases</div>
+    </div>
+  </div>
+
+  <div class="plans-comparison">
+    <table class="plans-table">
+      <thead>
+        <tr>
+          <th>Skill / Entregável</th>
+          <th style="color: #4A90D9">P1 · Visual</th>
+          <th style="color: #9B59B6">P2 · Dados</th>
+          <th style="color: #E67E22">P3 · Perf.</th>
+          <th style="color: var(--gold)">P4 · Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="5" class="phase-row-label" style="padding-left: 16px">FASE 0 — Input</td></tr>
+        <tr><td>🔍 Page Analyzer</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>📱 Instagram Analyzer</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>📋 Mini Briefing</td><td><span class="dash">—</span></td><td><span class="dash">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+
+        <tr><td colspan="5" class="phase-row-label" style="padding-left: 16px">FASE 1 — Estratégia</td></tr>
+        <tr><td>🧠 Psicólogo Comportamental</td><td><span class="dash">—</span></td><td><span class="dash">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>💡 Estrategista de Oferta</td><td><span class="dash">—</span></td><td><span class="dash">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>📈 CRO Strategy</td><td><span class="dash">—</span></td><td><span class="dash">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+
+        <tr><td colspan="5" class="phase-row-label" style="padding-left: 16px">FASE 2 — Conteúdo</td></tr>
+        <tr><td>✍️ Copywriting</td><td><span class="dash">—</span></td><td><span class="dash">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>🎨 Design System</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>⭐ Prova Social</td><td><span class="dash">—</span></td><td><span class="dash">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+
+        <tr><td colspan="5" class="phase-row-label" style="padding-left: 16px">FASE 3 — Build</td></tr>
+        <tr><td>💻 Desenvolvedor</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>⚡ Performance</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>🚦 Gate de Aprovação</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+
+        <tr><td colspan="5" class="phase-row-label" style="padding-left: 16px">FASE 4 — Visibilidade</td></tr>
+        <tr><td>🔎 SEO</td><td><span class="dash">—</span></td><td><span class="dash">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>🎯 Pixels & Remarketing</td><td><span class="dash">—</span></td><td><span class="dash">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+
+        <tr><td colspan="5" class="phase-row-label" style="padding-left: 16px">FASE 5 — Analytics</td></tr>
+        <tr><td>📊 Tracking (GTM + GA4 + LGPD)</td><td><span class="dash">—</span></td><td><span class="partial">básico</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>🖥️ Dashboard Dark Gold</td><td><span class="dash">—</span></td><td><span class="partial">simples</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+
+        <tr><td colspan="5" class="phase-row-label" style="padding-left: 16px">Entregáveis</td></tr>
+        <tr><td>Página no ar</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>Relatório de Estratégia</td><td><span class="dash">—</span></td><td><span class="dash">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>Guia de Interpretação</td><td><span class="dash">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>Dashboard completo</td><td><span class="dash">—</span></td><td><span class="dash">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+</div>
+
+<!-- ====== ARCHITECTURE VIEW ====== -->
+<div id="view-architecture" class="view">
+<div class="content">
+
+  <h2 style="font-size: 20px; margin-bottom: 8px; color: var(--text)">Arquitetura Técnica</h2>
+  <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 28px">Decisões técnicas, infraestrutura e fluxo de validação da Orquestradora.</p>
+
+  <div class="arch-grid">
+
+    <div class="arch-card">
+      <h3>Infraestrutura</h3>
+      <div class="arch-item">
+        <div class="arch-dot" style="--dot-color: var(--phase3)"></div>
+        <div class="arch-item-content">
+          <div class="arch-item-label">Plataforma</div>
+          <div class="arch-item-desc">HTML/CSS/JS puro · Cloudflare Pages · Sem WordPress, sem dependências</div>
+        </div>
+      </div>
+      <div class="arch-item">
+        <div class="arch-dot" style="--dot-color: var(--phase5)"></div>
+        <div class="arch-item-content">
+          <div class="arch-item-label">Subdomínio</div>
+          <div class="arch-item-desc"><code style="color: var(--text); font-size: 12px">lp.dominiodocliente.com.br</code> — não mexe no WordPress existente</div>
+        </div>
+      </div>
+      <div class="arch-item">
+        <div class="arch-dot" style="--dot-color: var(--phase4)"></div>
+        <div class="arch-item-content">
+          <div class="arch-item-label">Tracking Server-side</div>
+          <div class="arch-item-desc">Cloudflare Workers · Meta CAPI + Google Ads Conversion API · Sem client-side</div>
+        </div>
+      </div>
+      <div class="arch-item">
+        <div class="arch-dot" style="--dot-color: var(--phase5)"></div>
+        <div class="arch-item-content">
+          <div class="arch-item-label">Dashboard</div>
+          <div class="arch-item-desc">HTML/JS Dark Gold · <code style="color: var(--text); font-size: 12px">dashboard.dominiodocliente.com.br</code> · GA4 API via CF Worker</div>
+        </div>
+      </div>
+      <div class="arch-item">
+        <div class="arch-dot" style="--dot-color: var(--phase5)"></div>
+        <div class="arch-item-content">
+          <div class="arch-item-label">Compliance</div>
+          <div class="arch-item-desc">Google Consent Mode v2 + LGPD compliant desde o início</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-card">
+      <h3>Validação em 4 Camadas</h3>
+      <p style="color: var(--text-dim); font-size: 12px; margin-bottom: 16px; line-height: 1.5">A Orquestradora executa estas 4 camadas após <em>cada skill</em> antes de avançar:</p>
+      <div class="validation-steps">
+        <div class="validation-step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Coerência com Campaign Brief</div>
+            <div class="step-desc">Output alinhado com dados, tom, oferta e objetivos do brief central</div>
+          </div>
+        </div>
+        <div class="validation-step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Boas práticas técnicas</div>
+            <div class="step-desc">Critérios objetivos e específicos por skill (ex: Core Web Vitals para Performance)</div>
+          </div>
+        </div>
+        <div class="validation-step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Padrões de mercado</div>
+            <div class="step-desc">Acessa a web para benchmark com referências atuais do mercado</div>
+          </div>
+        </div>
+        <div class="validation-step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-title">Gate humano</div>
+            <div class="step-desc">Augusto aprova, pede revisão ou ignora. Falha → refaz automaticamente</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-card">
+      <h3>Gestão de Sessão</h3>
+      <div class="arch-item">
+        <div class="arch-dot" style="--dot-color: var(--gold)"></div>
+        <div class="arch-item-content">
+          <div class="arch-item-label">Persistência de contexto</div>
+          <div class="arch-item-desc">Arquivo <code style="color: var(--text); font-size: 12px">campaign-brief.md</code> no diretório do projeto com status "Em andamento"</div>
+        </div>
+      </div>
+      <div class="arch-item">
+        <div class="arch-dot" style="--dot-color: var(--phase1)"></div>
+        <div class="arch-item-content">
+          <div class="arch-item-label">Retomada inteligente</div>
+          <div class="arch-item-desc">Orquestradora detecta sessões anteriores e oferece continuar ou iniciar novo</div>
+        </div>
+      </div>
+      <div class="arch-item">
+        <div class="arch-dot" style="--dot-color: var(--phase2)"></div>
+        <div class="arch-item-content">
+          <div class="arch-item-label">Archivamento</div>
+          <div class="arch-item-desc">Projetos antigos arquivados como <code style="color: var(--text); font-size: 12px">campaign-brief-[data].md</code></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-card">
+      <h3>Execução Paralela vs Sequencial</h3>
+      <div class="arch-item">
+        <div class="arch-dot" style="--dot-color: #4A90D9"></div>
+        <div class="arch-item-content">
+          <div class="arch-item-label">Paralelo — Fases 0, 1 (parcial), 2 e 4</div>
+          <div class="arch-item-desc">Skills independentes rodam ao mesmo tempo. Fase 1: Psicólogo + Estrategista em paralelo, depois CRO Strategy sintetiza os dois.</div>
+        </div>
+      </div>
+      <div class="arch-item">
+        <div class="arch-dot" style="--dot-color: #E74C3C"></div>
+        <div class="arch-item-content">
+          <div class="arch-item-label">Sequencial — Fases 3 e 5</div>
+          <div class="arch-item-desc">Desenvolvedor → Performance → Gate (Fase 3). Tracking → Dashboard (Fase 5). Cada skill depende da anterior.</div>
+        </div>
+      </div>
+      <div class="arch-item">
+        <div class="arch-dot" style="--dot-color: #27AE60"></div>
+        <div class="arch-item-content">
+          <div class="arch-item-label">Gates humanos</div>
+          <div class="arch-item-desc">Gate de aprovação ao final da Fase 3. Orquestradora pausa e aguarda decisão de Augusto.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Skills count per phase -->
+  <div class="arch-card" style="background: var(--bg2); border-radius: 12px; padding: 24px;">
+    <h3 style="margin-bottom: 20px">Resumo do Pipeline</h3>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <div style="flex: 1; min-width: 120px; background: rgba(74,144,217,0.06); border: 1px solid rgba(74,144,217,0.2); border-radius: 8px; padding: 14px; text-align: center;">
+        <div style="font-size: 24px; font-weight: 800; color: var(--phase0)">3</div>
+        <div style="font-size: 11px; color: var(--text-dim); margin-top: 4px">Fase 0<br>Input</div>
+      </div>
+      <div style="flex: 1; min-width: 120px; background: rgba(155,89,182,0.06); border: 1px solid rgba(155,89,182,0.2); border-radius: 8px; padding: 14px; text-align: center;">
+        <div style="font-size: 24px; font-weight: 800; color: var(--phase1)">3</div>
+        <div style="font-size: 11px; color: var(--text-dim); margin-top: 4px">Fase 1<br>Estratégia</div>
+      </div>
+      <div style="flex: 1; min-width: 120px; background: rgba(230,126,34,0.06); border: 1px solid rgba(230,126,34,0.2); border-radius: 8px; padding: 14px; text-align: center;">
+        <div style="font-size: 24px; font-weight: 800; color: var(--phase2)">3</div>
+        <div style="font-size: 11px; color: var(--text-dim); margin-top: 4px">Fase 2<br>Conteúdo</div>
+      </div>
+      <div style="flex: 1; min-width: 120px; background: rgba(39,174,96,0.06); border: 1px solid rgba(39,174,96,0.2); border-radius: 8px; padding: 14px; text-align: center;">
+        <div style="font-size: 24px; font-weight: 800; color: var(--phase3)">2+gate</div>
+        <div style="font-size: 11px; color: var(--text-dim); margin-top: 4px">Fase 3<br>Build</div>
+      </div>
+      <div style="flex: 1; min-width: 120px; background: rgba(231,76,60,0.06); border: 1px solid rgba(231,76,60,0.2); border-radius: 8px; padding: 14px; text-align: center;">
+        <div style="font-size: 24px; font-weight: 800; color: var(--phase4)">2</div>
+        <div style="font-size: 11px; color: var(--text-dim); margin-top: 4px">Fase 4<br>Visibilidade</div>
+      </div>
+      <div style="flex: 1; min-width: 120px; background: rgba(26,188,156,0.06); border: 1px solid rgba(26,188,156,0.2); border-radius: 8px; padding: 14px; text-align: center;">
+        <div style="font-size: 24px; font-weight: 800; color: var(--phase5)">2</div>
+        <div style="font-size: 11px; color: var(--text-dim); margin-top: 4px">Fase 5<br>Analytics</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+  // Skill detail descriptions
+  const skillDetails = {
+    'page-analyzer': {
+      title: '🔍 Page Analyzer',
+      body: 'Audita a página de venda existente do cliente de forma completa: copy (headline, argumentação, CTAs), estrutura (hierarquia visual, seções), CRO (objeções não tratadas, elementos de confiança ausentes) e técnico (velocidade, mobile, acessibilidade). Output: relatório de auditoria que alimenta o Campaign Brief.'
+    },
+    'instagram-analyzer': {
+      title: '📱 Instagram Analyzer',
+      body: 'Analisa o perfil do Instagram do cliente para extrair tom de voz, identidade visual (paleta, estética), estilo de comunicação e dados de audiência. Esses dados alimentam Design System e Copywriting para garantir coerência entre a página e a presença digital do cliente.'
+    },
+    'mini-briefing': {
+      title: '📋 Mini Briefing',
+      body: 'Conduz uma entrevista estruturada e objetiva com o cliente para coletar: dados da oferta (produto, preço, bônus, garantia), objetivo da página, público-alvo principal e diferencial competitivo. Output: dados que completam o Campaign Brief.'
+    },
+    'psicologo': {
+      title: '🧠 Psicólogo Comportamental',
+      body: 'Mapeia em profundidade o público-alvo usando psicologia comportamental: dores primárias e secundárias, desejos conscientes e inconscientes, medos e objeções, gatilhos emocionais e racionais, nível de consciência em relação ao produto. Output: relatório de perfil psicográfico que alimenta CRO Strategy.'
+    },
+    'estrategista': {
+      title: '💡 Estrategista de Oferta',
+      body: 'Estrutura a oferta completa do produto/serviço: posicionamento de mercado, proposta de valor, precificação estratégica, stack de bônus, garantia, urgência/escassez. Analisa concorrentes e posiciona a oferta para máxima percepção de valor. Output: relatório de oferta que alimenta CRO Strategy.'
+    },
+    'cro': {
+      title: '📈 CRO Strategy',
+      body: 'Sintetiza os relatórios do Psicólogo Comportamental e do Estrategista de Oferta em uma estratégia de conversão coesa. Define: estrutura da página (seções e ordem), argumento central, sequência de persuasão, elementos de prova social necessários, CTAs e micro-conversões. Output: CRO Strategy que guia Copywriting, Design System e Prova Social.'
+    },
+    'copywriting': {
+      title: '✍️ Copywriting',
+      body: 'Escreve toda a copy da página de venda baseada na CRO Strategy: headline principal, subheadline, copy das seções (problema, solução, benefícios, prova social, oferta, garantia, FAQ, CTA). Aplica técnicas de copywriting de resposta direta adaptadas ao público e oferta específicos.'
+    },
+    'design-system': {
+      title: '🎨 Design System',
+      body: 'Define o sistema visual completo da página: paleta de cores (baseada no Instagram e posicionamento), tipografia (hierarchy, pesos, tamanhos), componentes visuais (botões, cards, badges), espaçamentos e grid, ícones e ilustrações. Output: design tokens e guia visual que o Desenvolvedor implementa.'
+    },
+    'prova-social': {
+      title: '⭐ Prova Social',
+      body: 'Coleta, audita, organiza e formata toda a prova social do cliente: depoimentos em texto e vídeo, resultados com números, cases de sucesso, logos de empresas/parceiros, certificações e prêmios. Posiciona estrategicamente baseado na CRO Strategy. Output: banco de provas formatado e pronto para uso.'
+    },
+    'desenvolvedor': {
+      title: '💻 Desenvolvedor',
+      body: 'Constrói a página de venda completa em HTML/CSS/JS puro, sem frameworks, hospedada em Cloudflare Pages. Implementa todas as seções baseadas na Copy + Design System + Prova Social. Garante responsividade, acessibilidade (WCAG AA) e código limpo e semântico. Output: página funcional no ar.'
+    },
+    'performance': {
+      title: '⚡ Performance',
+      body: 'Audita e otimiza a página para máxima velocidade: Core Web Vitals (LCP < 2.5s, CLS < 0.1, INP < 200ms), compressão de imagens (WebP/AVIF), lazy loading, critical CSS inline, minificação, preload de recursos críticos. Target: LCP < 2.5s em mobile 4G. Output: página otimizada com relatório de métricas.'
+    },
+    'gate': {
+      title: '🚦 Gate de Aprovação do Cliente',
+      body: 'Checkpoint humano ao final da Fase 3. A Orquestradora apresenta a página completa (com preview real) para Augusto revisar antes de avançar para SEO, Pixels e Analytics. Opções: (A) Aprovar e avançar, (R) Pedir revisão com instruções específicas, (I) Ignorar gate e avançar mesmo assim. Se revisão: Desenvolvedor refaz a parte solicitada, Performance revalida, gate abre novamente.'
+    },
+    'seo': {
+      title: '🔎 SEO',
+      body: 'Otimiza o SEO completo da página: title tag (< 60 chars), meta description (< 160 chars), Open Graph e Twitter Cards, Schema.org (WebPage, Product, FAQ, Review), estrutura de headings (H1 único, H2s semânticos), sitemap.xml e robots.txt, Core Web Vitals como ranking signal. Output: página indexável e otimizada para orgânico e compartilhamento.'
+    },
+    'pixels': {
+      title: '🎯 Pixels & Remarketing',
+      body: 'Implementa tracking de conversão server-side completo via Cloudflare Workers: Meta Conversions API (CAPI) sem pixel client-side, Google Ads Conversion API, Bing Ads Event Tracking. Configura audiências de remarketing, lookalike audiences e eventos customizados (PageView, Lead, Purchase, ViewContent). Zero dependência de cookies de terceiros.'
+    },
+    'tracking': {
+      title: '📊 Tracking',
+      body: 'Configura o sistema completo de analytics: Google Tag Manager (GTM) com data layer estruturado, GA4 com eventos customizados (scroll depth, cliques em CTA, tempo na página), Google Consent Mode v2, banner de cookies LGPD compliant, integração com Google Search Console. Server-side via Cloudflare Workers para máxima precisão.'
+    },
+    'dashboard': {
+      title: '🖥️ Dashboard de Análise',
+      body: 'Constrói o Dashboard Dark Gold: interface HTML/JS com estética premium (preto + dourado), hospedado em dashboard.dominiodocliente.com.br. Conectado à GA4 API via Cloudflare Worker proxy para evitar CORS e manter dados privados. Exibe: sessões, taxa de conversão, origem de tráfego, comportamento de scroll, performance de CTAs. Inclui Guia de Interpretação para o cliente.'
+    },
+  };
+
+  let selectedCard = null;
+
+  function selectSkill(card, skillId) {
+    const panel = document.getElementById('detail-panel');
+    const title = document.getElementById('detail-title');
+    const body = document.getElementById('detail-body');
+    const detail = skillDetails[skillId];
+
+    if (!detail) return;
+
+    if (selectedCard) selectedCard.classList.remove('selected');
+    if (card) {
+      card.classList.add('selected');
+      selectedCard = card;
+    }
+
+    title.textContent = detail.title;
+    body.textContent = detail.body;
+    panel.classList.add('visible');
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    event.target.classList.add('active');
+  }
+</script>
+
+</body>
+</html>
